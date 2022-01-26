@@ -3,8 +3,6 @@ const inquirer = require("inquirer");
 const mysql = require("mysql2");
 require("dotenv").config();
 
-
-
 //passes through the information needed to connect to the sql db
 const connection = mysql.createConnection({
   database: process.env.DATABASE,
@@ -18,34 +16,78 @@ connection.connect((err) => {
   if (err) throw err;
   console.log(`connected as id: ${connection.threadId}`);
 });
+
+//view roles
+const viewEmployees = () => {
+  console.log("THESE ARE ALL THE Employees CURRENTLY AS FOLLOWS");
+  connection.connect(function (err) {
+    if (err) throw err;
+    connection.query(
+      "SELECT * FROM employee_manager_db.employee",
+      function (err, result) {
+        if (err) throw err;
+        console.log(result);
+      }
+    );
+    mainMenu()
+  });
+};
+
+
+//view roles
+const viewRoles = () => {
+  console.log("THESE ARE ALL THE ROLES CURRENTLY AS FOLLOWS");
+  connection.connect(function (err) {
+    if (err) throw err;
+    connection.query(
+      "SELECT title FROM employee_manager_db.role",
+      function (err, result) {
+        if (err) throw err;
+        console.log(result);
+      }
+    );
+    mainMenu()
+  });
+};
+
+
 //view departments
-const viewDepartment = () =>{
-    inquirer.prompt
-}
+const viewDepartment = () => {
+  console.log("THESE ARE ALL THE DEPARTMENTS CURRENTLY ASS FOLLOWS");
+  connection.connect(function (err) {
+    if (err) throw err;
+    connection.query(
+      "SELECT department FROM employee_manager_db.department",
+      function (err, result) {
+        if (err) throw err;
+        console.log(result);
+      }
+    );
+    mainMenu()
+  });
+};
 
-
-
-//add dep function 
+//add dep function
 const addDepartment = () => {
-    inquirer
-      .prompt({
-        name: "department",
-        type: "input",
-        message: "add department",
-      })
-      .then((answer) => {
-        const query = connection.query(
-          "INSERT INTO department SET ?",
-          answer,
-  
-          (err, res) => {
-            if (err) throw err;
-            console.log(`${answer.department} has been added`);
-            mainMenu();
-          }
+  inquirer
+    .prompt({
+      name: "department",
+      type: "input",
+      message: "add department",
+    })
+    .then((answer) => {
+      const query = connection.query(
+        "INSERT INTO department SET ?",
+        answer,
+
+        (err, res) => {
+          if (err) throw err;
+          console.log(`${answer.department} has been added`);
+        }
         );
       });
-  };
+      mainMenu();
+};
 
 // runs the main prompt to start the app
 const mainMenu = () => {
@@ -69,21 +111,22 @@ const mainMenu = () => {
     .then((data) => {
       if (data.mainMenu == "view all roles") {
         console.log("the answer was view all roles");
+        viewRoles()
       } else if (data.mainMenu == "view all employees") {
         console.log("user selected all employees");
+        viewEmployees()
       } else if (data.mainMenu == "add a department") {
         console.log("user selected add dep");
-        addDepartment()
+        addDepartment();
       } else if (data.mainMenu == "add role") {
         console.log("user selected add role");
       } else if (data.mainMenu == "add an employee") {
         console.log("user selected add an employee");
-      } else if (data.mainMenu == "view departments ") {
+      } else if (data.mainMenu == "view departments") {
         console.log("user selected view departments");
+        viewDepartment();
       }
     });
 };
 
 mainMenu();
-
-
