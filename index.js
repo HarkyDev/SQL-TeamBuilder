@@ -1,4 +1,5 @@
 const { clear } = require("console");
+const { connect } = require("http2");
 const inquirer = require("inquirer");
 const mysql = require("mysql2");
 require("dotenv").config();
@@ -29,10 +30,9 @@ const viewEmployees = () => {
         console.log(result);
       }
     );
-    mainMenu()
+    mainMenu();
   });
 };
-
 
 //view roles
 const viewRoles = () => {
@@ -46,10 +46,9 @@ const viewRoles = () => {
         console.log(result);
       }
     );
-    mainMenu()
+    mainMenu();
   });
 };
-
 
 //view departments
 const viewDepartment = () => {
@@ -63,7 +62,7 @@ const viewDepartment = () => {
         console.log(result);
       }
     );
-    mainMenu()
+    mainMenu();
   });
 };
 
@@ -84,9 +83,70 @@ const addDepartment = () => {
           if (err) throw err;
           console.log(`${answer.department} has been added`);
         }
-        );
-      });
-      mainMenu();
+      );
+    });
+  mainMenu();
+};
+const viewEmployee = () => {
+  return connection.query(
+    "select * from employee_db.employee",
+    function (err, res) {
+      if (err) throw err;
+      console.log(res);
+    }
+  );
+  mainMenu();
+};
+
+const updateEmployee = () => {
+  return connection.query(
+    "SELECT Employee.first_name, Employee.last_name, employee.id, role.title, role.id FROM Employee LEFT JOIN Role ON EMployee.id = Role.id",
+
+    (err, res) => {
+      inquirer
+        .prompt([
+          {
+            name: "employee",
+            type: "list",
+            choices() {
+              console.log("response console log", res);
+              return res.map(({ first_name, last_name, id }) => {
+                return { name: first_name + " " + last_name, value: id };
+              });
+            },
+            message: "select employee to update ",
+          },
+          {
+            name: "role",
+            type: "list",
+            choices() {
+              return res.map(({ id, title }) => {
+                return { name: title, value: id };
+              });
+            },
+            message: "select new role",
+          },
+        ])
+        .then((answer) => {
+          connection.query(
+            "UPDATE  employee SET ? WHERE ?",
+            [
+              {
+                role_id: answer.role,
+              },
+              {
+                id: answer.employee,
+              },
+            ],
+            function (err, res) {
+              if (err) throw err;
+              console.log(`the ${answer.employee} role has been updated`);
+              mainMenu();
+            }
+          );
+        });
+    }
+  );
 };
 
 // runs the main prompt to start the app
@@ -105,28 +165,45 @@ const mainMenu = () => {
           "add a department",
           "add role",
           "add an employee",
+          "update employee role",
         ],
       },
     ])
     .then((data) => {
       if (data.mainMenu == "view all roles") {
         console.log("the answer was view all roles");
-        viewRoles()
-      } else if (data.mainMenu == "view all employees") {
+        viewRoles();
+      }
+       else if (data.mainMenu == "view all employees") {
         console.log("user selected all employees");
-        viewEmployees()
-      } else if (data.mainMenu == "add a department") {
+        viewEmployees();
+      }
+       else if (data.mainMenu == "add a department") {
         console.log("user selected add dep");
         addDepartment();
-      } else if (data.mainMenu == "add role") {
+      }
+       else if (data.mainMenu == "add role") {
         console.log("user selected add role");
-      } else if (data.mainMenu == "add an employee") {
+      }
+       else if (data.mainMenu == "add an employee") {
         console.log("user selected add an employee");
-      } else if (data.mainMenu == "view departments") {
+      
+      }
+       else if (data.mainMenu == "view departments") {
         console.log("user selected view departments");
         viewDepartment();
+      }
+       else if (data.mainMenu == "update employee role") {
+        console.log("user selected update an employee role");
+        updateEmployee();
       }
     });
 };
 
 mainMenu();
+
+//todo
+// change files structure
+// add last 2 functions for me
+//add comments for all functions
+//create video
