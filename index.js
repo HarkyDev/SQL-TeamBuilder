@@ -4,6 +4,7 @@ const inquirer = require("inquirer");
 const mysql = require("mysql2");
 require("dotenv").config();
 
+
 //passes through the information needed to connect to the sql db
 const connection = mysql.createConnection({
   database: process.env.DATABASE,
@@ -17,6 +18,34 @@ connection.connect((err) => {
   if (err) throw err;
   console.log(`connected as id: ${connection.threadId}`);
 });
+
+const addRole = () => {
+  inquirer
+    .prompt([
+      {
+        name: "title",
+        type: "input",
+        message: "Enter title",
+      },
+      {
+        name: "salary",
+        type: "input",
+        message: "Enter salary",
+      },
+    ])
+    .then((answer) => {
+      const query = connection.query(
+        "INSERT INTO role SET ?",
+        answer,
+
+        (err, res) => {
+          if (err) throw err;
+          console.log(`${answer.title} has been added`);
+          startQuery();
+        }
+      );
+    });
+};
 
 //view roles
 const viewEmployees = () => {
@@ -32,6 +61,34 @@ const viewEmployees = () => {
     );
     mainMenu();
   });
+};
+
+const addEmployee = () => {
+  inquirer
+    .prompt([
+      {
+        name: "first_name",
+        type: "input",
+        message: "Enter first name",
+      },
+      {
+        name: "last_name",
+        type: "input",
+        message: "Enter surname name",
+      },
+    ])
+    .then((answer) => {
+      const query = connection.query(
+        "INSERT INTO employee SET ?",
+        answer,
+
+        (err, res) => {
+          if (err) throw err;
+          console.log(`${answer.first_name} has been added`);
+          startQuery();
+        }
+      );
+    });
 };
 
 //view roles
@@ -85,7 +142,7 @@ const addDepartment = () => {
         }
       );
     });
-  mainMenu();
+    mainMenu();
 };
 const viewEmployee = () => {
   return connection.query(
@@ -184,10 +241,11 @@ const mainMenu = () => {
       }
        else if (data.mainMenu == "add role") {
         console.log("user selected add role");
+        addRole()
       }
        else if (data.mainMenu == "add an employee") {
         console.log("user selected add an employee");
-      
+        addEmployee()
       }
        else if (data.mainMenu == "view departments") {
         console.log("user selected view departments");
